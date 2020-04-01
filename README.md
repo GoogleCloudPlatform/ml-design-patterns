@@ -1,3 +1,5 @@
+*This is not an official Google product*
+
 # ml_design_patterns
 Source code accompanying O'Reilly book: Machine Learning Design Patterns
 
