@@ -1,6 +1,6 @@
 *This is not an official Google product*
 
-# ml_design_patterns
+# ml-design-patterns
 Source code accompanying O'Reilly book: Machine Learning Design Patterns
 
 **Authors**: Valliappa (Lak) Lakshmanan, Michael Munn, Sara Robinson
