@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+import apache_beam as beam
+from apache_beam.runners.interactive import interactive_runner
+import apache_beam.runners.interactive.interactive_beam as ib
+import datetime
+import numpy as np
+import pandas as pd
+
 def parse_line(line):
     import datetime
     timestamp, delay = line.split(",")
@@ -7,24 +14,71 @@ def parse_line(line):
     return beam.window.TimestampedValue(
         {
             'scheduled': timestamp,
-            'delay': delay
+            'delay': float(delay)
         },
         timestamp.timestamp() # unix timestamp
     )
 
-def run(to_bq):
-    import apache_beam as beam
+def is_anomaly(orig):
+    import numpy as np
+    outcome = orig[-1] # the last item
+
+    # discard min & max value & current (last) item
+    xarr = np.delete(orig, [np.argmin(orig), np.argmax(orig), len(orig)-1])
+    if len(xarr) < 3:
+        # need at least three items to compute a valid standard deviation
+        return False
+
+    # Fit a model (4-sigma deviations)
+    prediction = np.mean(xarr)
+    acceptable_deviation = 4 * np.std(xarr)
+    result = np.abs(outcome - prediction) > acceptable_deviation
+    if result:
+        # anomaly
+        print(orig)
+    return result
+
+class AnomalyFn(beam.CombineFn):
+    def create_accumulator(self):
+        return pd.DataFrame()
+
+    def add_input(self, df, window):
+        return df.append(window, ignore_index=True)
+
+    def merge_accumulators(self, dfs):
+        return pd.concat(dfs)
+
+    def extract_output(self, dfw):
+        if len(dfw) < 1:
+            return None
+        dfw = dfw.sort_values(by='scheduled').reset_index(drop=True);
+        last_row = {}
+        for col in dfw.columns:
+            last_row[col] = dfw[col].iloc[len(dfw)-1]
+        last_row['is_anomaly'] = is_anomaly(dfw['delay'].values)
+        if last_row['is_anomaly']:
+            print(last_row)
+        return last_row
+
+
+def run():
     p = beam.Pipeline()
-    
     data = (p 
-            | 'files' >> beam.io.ReadFromText('delays.csv')
-            | 'parse' >> beam.Map(parse_line))
-    
+        | 'files' >> beam.io.ReadFromText('delays.csv')
+        | 'parse' >> beam.Map(parse_line))
+
     windowed = (data
-                | 'window' >> beam.WindowInto(
-                    beam.FixedWindows(2*60*60),
-                    trigger=beam.AfterCount(1), # every element
-                    accumulation_mode=beam.AccumulationMode.ACCUMULATING))
+        | 'window' >> beam.WindowInto(
+                beam.window.FixedWindows(2*60*60),
+                #trigger=beam.trigger.AfterCount(1), # every element
+                accumulation_mode=beam.trigger.AccumulationMode.ACCUMULATING))
     
-         | 'find_anomaly' >> beam.Map(is_anomaly)
+    anomalies = (windowed 
+        | 'find_anomaly' >> beam.transforms.CombineGlobally(AnomalyFn()).without_defaults())
     
+    anomalies | 'write' >> beam.io.WriteToText('anomalies.json')
+    p.run().wait_until_finish()
+    
+if __name__ == '__main__':
+    run()
+
