@@ -47,6 +47,36 @@ class ModelFn(beam.CombineFn):
             'prediction': prediction,
             'acceptable_deviation': acceptable_deviation
         }
+    
+class OnlineModelFn(beam.CombineFn):
+    def create_accumulator(self):
+        return (0.0, 0.0, 0) # x, x^2, count
+
+    def add_input(self, sum_count, input_dict):
+        (sum, sumsq, count) = sum_count
+        input = input_dict['delay']
+        return (sum + input, sumsq + input*input, count + 1)
+
+    def merge_accumulators(self, accumulators):
+        sums, sumsqs, counts = zip(*accumulators)
+        return sum(sums), sum(sumsqs), sum(counts)
+
+    def extract_output(self, sum_count):
+        (sum, sumsq, count) = sum_count
+        if count:
+            mean = sum / count
+            variance = (sumsq / count) - mean*mean
+            # -ve value could happen due to rounding
+            stddev = np.sqrt(variance) if variance > 0 else 0
+            return {
+                'prediction': mean,
+                'acceptable_deviation': 4 * stddev
+            }
+        else:
+            return {
+                'prediction': float('NaN'),
+                'acceptable_deviation': float('NaN')
+            }
 
 def is_anomaly(data, model_state):
     result = data.copy()
@@ -83,7 +113,7 @@ def run():
                 accumulation_mode=beam.trigger.AccumulationMode.DISCARDING))
     
     model_state = (windowed 
-        | 'model' >> beam.transforms.CombineGlobally(ModelFn()).without_defaults())
+        | 'model' >> beam.transforms.CombineGlobally(OnlineModelFn()).without_defaults())
 
     anomalies = (windowed 
         | 'latest_slice' >> beam.FlatMap(is_latest_slice)
