@@ -43,7 +43,7 @@ We will update this repo with source code as we write each chapter. Stay tuned!
   * #25 Feature Store
   * #26 Versioning
 * Stakeholder management
-  * #28 Heuristic benchmark
-  * #29 Model explainability
-  * #30 Model fairness
+  * #27 Heuristic benchmark
+  * #28 Model explainability
+  * #29 Model fairness
 * Summary
