@@ -38,12 +38,13 @@ We will update this repo with source code as we write each chapter. Stay tuned!
 * Reproducibility patterns
   * #21 Transform
   * #22 Repeatable Sampling
-  * #23 Stateful Stream
-  * #24 Experiment Pipeline
-  * #25 Feature Store
-  * #26 Versioning
+  * #23 Bridging Schema
+  * #24 Stateful Stream
+  * #25 Experiment Pipeline
+  * #26 Feature Store
+  * #27 Model Versioning
 * Stakeholder management
-  * #27 Heuristic benchmark
-  * #28 Model explainability
-  * #29 Model fairness
+  * #28 Heuristic benchmark
+  * #29 Model explainability
+  * #30 Model fairness
 * Summary
