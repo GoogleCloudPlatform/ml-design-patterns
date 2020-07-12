@@ -45,16 +45,16 @@ class AnomalyFn(beam.CombineFn):
     def merge_accumulators(self, dfs):
         return pd.concat(dfs)
 
-    def extract_output(self, dfw):
-        if len(dfw) < 1:
+    def extract_output(self, df):
+        if len(df) < 1:
             return {}
-        dfw = dfw.sort_values(by='scheduled').reset_index(drop=True);
+        df = df.sort_values(by='scheduled').reset_index(drop=True);
         last_row = {}
-        for col in dfw.columns:
-            last_row[col] = dfw[col].iloc[len(dfw)-1]
-        last_row['is_anomaly'] = is_anomaly(dfw['delay'].values)
+        for col in df.columns:
+            last_row[col] = df[col].iloc[len(df)-1]
+        last_row['is_anomaly'] = is_anomaly(df['delay'].values)
         if last_row['is_anomaly']:
-            print(dfw['delay'], last_row)
+            print(df['delay'], last_row)
         return last_row
 
 

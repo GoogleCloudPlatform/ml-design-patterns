@@ -23,18 +23,18 @@ class ModelFn(beam.CombineFn):
     def create_accumulator(self):
         return pd.DataFrame()
 
-    def add_input(self, dfw, window):
-        return dfw.append(window, ignore_index=True)
+    def add_input(self, df, window):
+        return df.append(window, ignore_index=True)
 
     def merge_accumulators(self, dfs):
         return pd.concat(dfs)
 
-    def extract_output(self, dfw):
-        if len(dfw) < 1:
+    def extract_output(self, df):
+        if len(df) < 1:
             return {}
         # if model is order-dependent, then we also need this
-        # dfw = dfw.sort_values(by='scheduled').reset_index(drop=True);
-        orig = dfw['delay'].values
+        # df = df.sort_values(by='scheduled').reset_index(drop=True);
+        orig = df['delay'].values
         xarr = np.delete(orig, [np.argmin(orig), np.argmax(orig)])
         if len(xarr) > 2:
             # need at least three items to compute a valid standard deviation
