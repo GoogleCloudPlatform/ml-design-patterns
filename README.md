@@ -13,38 +13,38 @@ We will update this repo with source code as we write each chapter. Stay tuned!
 * The Need for ML Design Patterns
 * Data representation design patterns
   * #1 Hashed Feature
-  * #2 Reframing
+  * #2 Embedding
   * #3 Feature Cross
-  * #4 Multimodal Input Representations
-* Problem representation patterns
+  * #4 Multimodal Input
+* Problem representation design patterns
   * #5 Reframing
   * #6 Multilabel
-  * #7 Ensembles
+  * #7 Ensemble
   * #8 Cascade
   * #9 Neutral Class
   * #10 Rebalancing
-* Patterns that hack the training loop
+* Patterns that modify model training
   * #11 Useful overfitting
   * #12 Checkpoints
   * #13 Transfer Learning
   * #14 Distribution Strategy
   * #15 Hyperparameter Tuning
 * Resilience patterns
-  * #16 Serving Function
+  * #16 Stateless Serving Function
   * #17 Batch Serving
-  * #18 Continous Evaluation
+  * #18 Continuous Model Evaluation
   * #19 Two Phase Predictions
   * #20 Keyed Predictions
 * Reproducibility patterns
   * #21 Transform
   * #22 Repeatable Sampling
-  * #23 Bridging Schema
+  * #23 Bridged Schema
   * #24 Stateful Stream
-  * #25 Experiment Pipeline
+  * #25 Workflow Pipeline
   * #26 Feature Store
   * #27 Model Versioning
-* Stakeholder management
+* Responsible AI
   * #28 Heuristic benchmark
-  * #29 Model explainability
-  * #30 Model fairness
+  * #29 Explainable Predictions
+  * #30 Fairness Lens
 * Summary
