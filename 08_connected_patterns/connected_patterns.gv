@@ -1,4 +1,4 @@
-# Usage: dot -Tps connected_patterns-no_text.gv -o connected_patterns-no_text.ps
+# Usage: dot -Tps connected_patterns.gv -o connected_patterns.ps
 
 digraph G {
 node [shape=box];
