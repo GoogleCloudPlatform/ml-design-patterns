@@ -7,8 +7,8 @@ layout="circo";
 splines=true;
 mindist=1.3;
 {
-"hashed feature" [fontcolor="red"];
-"rebalancing" [fontcolor="blue"];
+"hashed feature" [color=red, fontcolor=red];
+"rebalancing" [color=blue, fontcolor=blue];
 "hashed feature" -> "embeddings" [minlen= 6, label = "capture relationships between hashed features using"];
 "repeatable splitting" -> "hashed feature" [minlen= 8, label = "uses" ];
 "hashed feature" -> "hyperparameter tuning" [minlen= 4, label = "to select number of hash buckets, use" ];
