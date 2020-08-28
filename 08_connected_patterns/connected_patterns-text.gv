@@ -1,11 +1,16 @@
 # Usage: dot -Tps connected_patterns-text.gv -o connected_patterns-text.ps
 
 digraph G {
-node [shape=box];
-size="8,11";
+node [shape=ellipse];
+#size="8,11";
+layout="circo";
+splines=true;
+mindist=1.3;
 {
-"hashed feature" -> "embeddings" [minlen= 5, label = "capture relationships between hashed features using"];
-"hashed feature" -> "repeatable splitting" [minlen= 4, label = "uses a fingerprint algorithm, similar to" ];
+"hashed feature" [fontcolor="red"];
+"rebalancing" [fontcolor="blue"];
+"hashed feature" -> "embeddings" [minlen= 6, label = "capture relationships between hashed features using"];
+"repeatable splitting" -> "hashed feature" [minlen= 8, label = "uses" ];
 "hashed feature" -> "hyperparameter tuning" [minlen= 4, label = "to select number of hash buckets, use" ];
 "embeddings" -> "transfer learning" [minlen= 4, label = "of text, images are a form of" ];
 "embeddings" -> "feature store" [minlen= 4, label = "can be stored and saved within" ];
@@ -34,7 +39,7 @@ size="8,11";
 "continued model evaluation" -> "workflow pipeline" [minlen= 4, label = "simplify retraining triggers using" ];
 "continued model evaluation" -> "model versioning" [minlen= 4, label = "compare model performance using" ];
 "continued model evaluation" -> "keyed prediction" [minlen= 4, label = "requires" ];
-"continued model evaluation" -> "fairness lens" [minlen= 4, label = "might need to incorporate" ];
+"continued model evaluation" -> "fairness lens" [minlen= 4, label = "incorporates", rankdir="LR" ];
 "transform" -> "stateless serving function" [minlen= 4, label = "adds artifacts to" ];
 "transform" -> "windowed inference" [minlen= 4, label = "in streaming pipelines, consider" ];
 "transform" -> "feature store" [minlen= 4, label = "for reuse between ML tasks, consider" ];
