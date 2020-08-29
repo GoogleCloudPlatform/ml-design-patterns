@@ -1,0 +1,53 @@
+#Usage: dot -Tpng connected-patterns.gv -o connected-patterns.png
+#Usage: dot -Tpdf connected-patterns.gv -o connected-patterns.pdf
+
+digraph G {
+node [shape=box];
+size="8,11";
+{
+"hashed feature" -> "embeddings" [minlen= 5 ];
+"hashed feature" -> "repeatable splitting" [minlen= 4 ];
+"hashed feature" -> "hyperparameter tuning" [minlen= 4 ];
+"embeddings" -> "transfer learning" [minlen= 4 ];
+"embeddings" -> "feature store" [minlen= 4 ];
+"embeddings" -> "hyperparameter tuning" [minlen= 5 ];
+"embeddings" -> "neutral class" [minlen= 4 ];
+"feature cross" -> "embeddings" [minlen= 4 ];
+"transform" -> "multimodal input" [minlen= 4 ];
+"reframing" -> "multilabel output" [minlen= 4 ];
+"reframing" -> "fairness lens" [minlen= 4 ];
+"reframing" -> "neutral class" [minlen= 4 ];
+"multilabel output" -> "cascade" [minlen= 4 ];
+"ensembles" -> "explainable predictions" [minlen= 4 ];
+"reframing" -> "cascade" [minlen= 4 ];
+"useful overfitting" -> "cascade" [minlen= 4 ];
+"rebalancing" -> "ensembles" [minlen= 4 ];
+"rebalancing" -> "reframing" [minlen= 4 ];
+"rebalancing" -> "cascade" [minlen= 4 ];
+"rebalancing" -> "explainable predictions" [minlen= 4 ];
+"checkpoints" -> "transfer learning" [minlen= 4 ];
+"transfer learning" -> "cascade" [minlen= 4 ];
+"distributed training" -> "checkpoints" [minlen= 4 ];
+"stateless serving function" -> "model versioning" [minlen= 4 ];
+"stateless serving function" -> "batch serving" [minlen= 4 ];
+"batch serving" -> "windowed inference" [minlen= 5 ];
+"batch serving" -> "keyed prediction" [minlen= 4 ];
+"continued model evaluation" -> "workflow pipeline" [minlen= 4 ];
+"continued model evaluation" -> "model versioning" [minlen= 4 ];
+"continued model evaluation" -> "keyed prediction" [minlen= 4 ];
+"continued model evaluation" -> "fairness lens" [minlen= 4 ];
+"transform" -> "stateless serving function" [minlen= 4 ];
+"transform" -> "windowed inference" [minlen= 4 ];
+"transform" -> "feature store" [minlen= 4 ];
+"transform" -> "workflow pipeline" [minlen= 4 ];
+"bridged schema" -> "hyperparameter tuning" [minlen= 5 ];
+"bridged schema" -> "feature store" [minlen= 4 ];
+"bridged schema" -> "cascade" [minlen= 4 ];
+"windowed inference" -> "feature store" [minlen= 4 ];
+"windowed inference" -> "two phase prediction" [minlen= 4 ];
+"model versioning" -> "workflow pipeline" [minlen= 4 ];
+"explainable predictions" -> "heuristic benchmark" [minlen= 4 ];
+"explainable predictions" -> "fairness lens" [minlen= 4 ];
+"fairness lens" -> "workflow pipeline" [minlen= 5 ];
+}
+}
