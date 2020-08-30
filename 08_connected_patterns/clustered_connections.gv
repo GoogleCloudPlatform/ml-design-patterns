@@ -1,0 +1,161 @@
+#Usage: dot -Tpng cutout_figure.gv -o cutout_figure.png
+#Usage: dot -Tpdf connected-patterns_text_filled.gv -o connected-patterns_text_filled.pdf
+
+digraph G {
+node [shape=ellipse, colorscheme=spectral9];
+#size="8,11";
+splines=true;
+mindist=1.3;
+compound=true;
+rankdir="BT";
+
+{
+# center
+mldp [label=<
+<table>
+<tr><td>Machine Learning Design Patterns</td></tr>
+<tr><td>Put image here</td></tr>
+<tr><td>Put image here</td></tr>
+<tr><td>Put image here</td></tr>
+<tr><td>Put image here</td></tr>
+<tr><td>Put image here</td></tr>
+</table>
+>, shape=plaintext];
+
+# Chapter 2: Data Representation
+subgraph cluster_ch2 {
+   color="/accent6/1";
+   label="Data Representation";
+   node [color="/accent6/1", style=filled];
+   hash [label="Hashed Feature"];
+   emb [label="Embedding"];
+   fc [label="Feature Cross"];
+   mmi [label="Multimodal Input"];
+
+   # internal relationships
+   hash_emb [label=<capture relationships between<br/> hashed features using>, shape=none, style=none];
+   hash -> hash_emb -> emb;
+   fc_emb [label="reduce dimensionality using", shape=none, style=none];
+   fc -> fc_emb -> emb;
+}
+
+# Chapter 3: Problem Representation
+subgraph cluster_ch3 {
+   color="/accent6/2";
+   node [color="/accent6/2", style=filled];
+   label = "Problem Representation";
+   reframe [label="Reframing"];
+   multilabel [label="Multilabel"];
+   ensemble [label="Ensemble"];
+   cascade [label="Cascade"];
+   neutral [label="Neutral Class"];
+   balance [label="Rebalancing"];
+
+   # internal relationships
+   ensemble_cascade [label="often requires", shape=none, style=none];
+   ensemble -> ensemble_cascade -> cascade;
+
+   might_need [label="might require", shape=none, style=none];
+   neutral -> might_need -> reframe;
+}
+
+# Chapter 4: Model Training
+subgraph cluster_ch4 {
+  label="Model Training";
+  color="/accent6/3";
+  node [color="/accent6/3", style=filled];
+  overfit [label="Useful Overfitting"];
+  chkpt [label="Checkpoints"];
+  txf [label="Transfer Learning"];
+  dt [label="Distributed Training"];
+  hyp [label="Hyperparameter Tuning"];
+
+  chkpt_txf [label=<with finetuning, <br/>is form of>, shape=none, style=none]
+  chkpt -> chkpt_txf -> txf;
+}
+
+# Chapter 5: Resilience
+subgraph cluster_ch5 {
+  label="Resilience";
+  color="/accent6/4";
+  node[color="/accent6/4", style=filled];
+  srv [label="Stateless Serving Function"]
+  batch [label="Batch Serving"];
+  eval [label="Continued Model Evaluation"];
+  twophase [label="Two Phase Prediction"];
+  key [label="Keyed Prediction"];
+
+  batch_key [label="often requires", shape=none, style=none];
+  batch -> batch_key -> key;
+  twophase_srv [label="often requires", shape=none, style=none];
+  twophase -> twophase_srv -> srv;
+}
+
+# Chapter 6: Reproducibility
+subgraph cluster_ch6 {
+  label="Reproducibility";
+  color="/accent6/5";
+  node[color="/accent6/5", style=filled];
+  transform [label="Transform"];
+  split [label="Repeatable Splitting"];
+  bridge [label="Bridged Schema"]
+  window [label="Windowed Inference"];
+  pipeline [label="Workflow Pipeline"];
+  store [label="Feature Store"];
+  version [label="Model Versioning"];
+
+  transform_store [label="simpler than", shape=none, style=none];
+  transform -> transform_store -> store;
+}
+
+# Chapter 7: Explainable AI
+subgraph cluster_ch7 {
+  label="Responsible AI";
+  color="/accent6/6";
+  node [color="/accent6/6", style=filled];
+  bench [label="Heuristic Benchmark"];
+  explain [label="Explainable Predictions"];
+  fair [label="Fairness Lens"];
+
+  explain_bench [label="may require", shape=none, style=none];
+  explain -> explain_bench -> bench;
+}
+
+# connections
+mldp -> hash [lhead=cluster_ch2];
+mldp -> reframe [lhead=cluster_ch3];
+mldp -> chkpt [lhead=cluster_ch4];
+mldp -> srv [lhead=cluster_ch5];
+mldp -> transform [lhead=cluster_ch6];
+mldp -> fair [lhead=cluster_ch7];
+
+# ch2
+split_hash [label=<uses fingerprint algorithm<br/>similar to>, shape=none];
+split -> split_hash -> hash;
+ch2_tft [label="use along with", shape=none]
+hash -> ch2_tft [ltail=cluster_ch2]; ch2_tft -> transform;
+hash_hyp [label=<to select number of<br/>hashbuckets, use>, shape=none];
+hash -> hash_hyp -> hyp;
+
+emb_txf [label="is form of", shape=none];
+emb -> emb_txf -> txf;
+emb_store [label=<can be stored<br/>and saved in>, shape=none];
+emb -> emb_store -> store;
+emb_hyp [label=<to choose embedding<br/>dimension, use>, shape=none];
+emb -> emb_hyp -> hyp;
+emb_neutral [label="may be improved using", shape=none];
+emb -> emb_neutral -> neutral;
+
+# ch3
+can_hurt [label="can hurt", shape=none]
+ensemble -> can_hurt -> explain; neutral -> can_hurt;
+ch3_fair [label="has impact on", shape=none]
+balance -> ch3_fair [ltail=cluster_ch3]; ch3_fair -> fair;
+
+# ch4
+
+
+
+
+}
+}
