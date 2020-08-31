@@ -1,6 +1,6 @@
 # Workflow Pipeline Pattern
 
-**The code in this subdirectory is adapted from the [official TFX taxi pipeline sample](https://github.com/tensorflow/tfx/tree/master/tfx/examples/chicago_taxi_pipeline). Refer to that sample for a detailed e2e TFX pipeline. This one is meant to provide more of a "hello world" example using fewer components.**
+**The code in this subdirectory is adapted from the [official TFX taxi pipeline sample](https://github.com/tensorflow/tfx/tree/master/tfx/examples/chicago_taxi_pipeline). Refer to that sample for a detailed e2e TFX pipeline. This one is meant to provide a getting started example using fewer components.**
 
 ## Overview
 
