@@ -5,7 +5,7 @@ Source code accompanying O'Reilly book:
 **Title**: Machine Learning Design Patterns
 **Authors**: Valliappa (Lak) Lakshmanan, Sara Robinson, Michael Munn
 
-<img src="mldp_cover.jpg" />
+<img src="mldp_cover_color.png" />
 
 We will update this repo with source code as we write each chapter. Stay tuned!
 
