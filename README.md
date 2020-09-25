@@ -41,7 +41,7 @@ We will update this repo with source code as we write each chapter. Stay tuned!
   * #21 Transform
   * #22 Repeatable Sampling
   * #23 Bridged Schema
-  * #24 Stateful Stream
+  * #24 Windowed Inference
   * #25 Workflow Pipeline
   * #26 Feature Store
   * #27 Model Versioning
