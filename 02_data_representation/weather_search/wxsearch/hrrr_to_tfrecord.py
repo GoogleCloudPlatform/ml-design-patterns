@@ -14,28 +14,37 @@ import apache_beam as beam
 import random
 
 def _array_feature(value, min_value, max_value):
+    if isinstance(value, type(tf.constant(0))): # if value is tensor
+        value = value.numpy() # get value of tensor
+ 
     """Wrapper for inserting ndarray float features into Example proto."""
     value = np.nan_to_num(value.flatten()) # nan, -inf, +inf to numbers
     value = np.clip(value, min_value, max_value) # clip to valid
+    print(value[:10])
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
 def create_tfrecord(filename):
+    print(filename)
     with tempfile.TemporaryDirectory() as tmpdirname:
         TMPFILE="{}/read_grib".format(tmpdirname)
         tf.io.gfile.copy(filename, TMPFILE, overwrite=True)
         ds = xr.open_dataset(TMPFILE, engine='cfgrib', backend_kwargs={'filter_by_keys': {'typeOfLevel': 'unknown', 'stepType': 'instant'}})
    
         # create a TF Record with the raw data
+        refc = ds.data_vars['refc']
+        size = np.array([ds.data_vars['refc'].sizes['y']*1.0, ds.data_vars['refc'].sizes['x']*1.0])
         tfexample = tf.train.Example(
             features=tf.train.Features(
                 feature={
-                    'ref': _array_feature(ds.data_vars['refc'].data, min_value=0, max_value=60),
+                    'size': tf.train.Feature(float_list=tf.train.FloatList(value=size)),
+                    #'ref': _array_feature(refc.data, min_value=0, max_value=60),
         }))
         return tfexample.SerializeToString()
 
 def generate_filenames(startdate: str, enddate: str):
     start_dt = datetime.strptime(startdate, '%Y%m%d')
     end_dt = datetime.strptime(enddate, '%Y%m%d')
+    print('Hourly records from {} to {}'.format(start_dt, end_dt))
     dt = start_dt
     while dt < end_dt:
         # gs://high-resolution-rapid-refresh/hrrr.20200811/conus/hrrr.t04z.wrfsfcf00.grib2
@@ -114,7 +123,7 @@ if __name__ == '__main__':
       'region':
           'us-central1',
       'setup_file':
-          os.path.join(os.path.dirname(os.path.abspath(__file__)), '../setup.py'),
+          os.path.join(os.path.dirname(os.path.abspath(__file__)), './setup.py'),
       'save_main_session':
           True,
       # 'sdk_location':
@@ -129,9 +138,9 @@ if __name__ == '__main__':
     else:
         print('Launching Dataflow job {} ... hang on'.format(options['job_name']))
         try:
-          subprocess.check_call('gsutil -m rm -r {}'.format(outdir).split())
+            subprocess.check_call('gsutil -m rm -r {}'.format(outdir).split())
         except:  # pylint: disable=bare-except
-          pass
+            pass
         options['runner'] = 'DataflowRunner'
 
     run_job(options)
