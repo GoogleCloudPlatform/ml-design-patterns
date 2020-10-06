@@ -20,15 +20,24 @@ def _array_feature(value, min_value, max_value):
     """Wrapper for inserting ndarray float features into Example proto."""
     value = np.nan_to_num(value.flatten()) # nan, -inf, +inf to numbers
     value = np.clip(value, min_value, max_value) # clip to valid
-    print(value[:10])
+    logging.info('Range of image values {} to {}'.format(np.min(value), np.max(value)))
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
+
+def _bytes_feature(value):
+    """Returns a bytes_list from a string / byte."""
+    if isinstance(value, type(tf.constant(0))):
+        value = value.numpy() # BytesList won't unpack a string from an EagerTensor.
+    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+def _string_feature(value):
+    return _bytes_feature(value.encode('utf-8'))
 
 def create_tfrecord(filename):
     print(filename)
     with tempfile.TemporaryDirectory() as tmpdirname:
         TMPFILE="{}/read_grib".format(tmpdirname)
         tf.io.gfile.copy(filename, TMPFILE, overwrite=True)
-        ds = xr.open_dataset(TMPFILE, engine='cfgrib', backend_kwargs={'filter_by_keys': {'typeOfLevel': 'unknown', 'stepType': 'instant'}})
+        ds = xr.open_dataset(TMPFILE, engine='cfgrib', backend_kwargs={'filter_by_keys': {'typeOfLevel': 'atmosphere', 'stepType': 'instant'}})
    
         # create a TF Record with the raw data
         refc = ds.data_vars['refc']
@@ -37,14 +46,16 @@ def create_tfrecord(filename):
             features=tf.train.Features(
                 feature={
                     'size': tf.train.Feature(float_list=tf.train.FloatList(value=size)),
-                    #'ref': _array_feature(refc.data, min_value=0, max_value=60),
+                    'ref': _array_feature(refc.data, min_value=0, max_value=60),
+                    'time': _string_feature(str(refc.time.data)),
+                    'valid_time': _string_feature(str(refc.valid_time.data))
         }))
         return tfexample.SerializeToString()
 
 def generate_filenames(startdate: str, enddate: str):
     start_dt = datetime.strptime(startdate, '%Y%m%d')
     end_dt = datetime.strptime(enddate, '%Y%m%d')
-    print('Hourly records from {} to {}'.format(start_dt, end_dt))
+    logging.info('Hourly records from {} to {}'.format(start_dt, end_dt))
     dt = start_dt
     while dt < end_dt:
         # gs://high-resolution-rapid-refresh/hrrr.20200811/conus/hrrr.t04z.wrfsfcf00.grib2
@@ -53,6 +64,14 @@ def generate_filenames(startdate: str, enddate: str):
                 dt.year, dt.month, dt.day, dt.hour)
         dt = dt + timedelta(hours=1)
         yield f
+                 
+def generate_shuffled_filenames(startdate: str, enddate: str):
+    """
+    shuffle the files so that a batch of records doesn't contain highly correlated entries
+    """
+    filenames = [f for f in generate_filenames(startdate, enddate)]
+    np.random.shuffle(filenames)
+    return filenames
 
 def run_job(options):
     # start the pipeline
@@ -62,18 +81,10 @@ def run_job(options):
         examples = (
           p
           | 'hrrr_files' >> beam.Create(
-              generate_filenames(options['startdate'], options['enddate']))
+              generate_shuffled_filenames(options['startdate'], options['enddate']))
           | 'create_tfr' >>
-          beam.FlatMap(lambda x: create_tfrecord(x))
+          beam.Map(lambda x: create_tfrecord(x))
         )
-
-        # shuffle the examples so that each small batch doesn't contain
-        # highly correlated records
-        #examples = (examples
-        #      | 'reshuffleA' >> beam.Map(
-        #          lambda t: (random.randint(1, 1000), t))
-        #      | 'reshuffleB' >> beam.GroupByKey()
-        #      | 'reshuffleC' >> beam.FlatMap(lambda t: t[1]))
 
         # write out tfrecords
         _ = (examples
