@@ -13,6 +13,8 @@ import subprocess
 import apache_beam as beam
 import random
 
+LEVEL_TYPE = 'atmosphere'  # unknown?
+
 def _array_feature(value, min_value, max_value):
     if isinstance(value, type(tf.constant(0))): # if value is tensor
         value = value.numpy() # get value of tensor
@@ -37,7 +39,7 @@ def create_tfrecord(filename):
     with tempfile.TemporaryDirectory() as tmpdirname:
         TMPFILE="{}/read_grib".format(tmpdirname)
         tf.io.gfile.copy(filename, TMPFILE, overwrite=True)
-        ds = xr.open_dataset(TMPFILE, engine='cfgrib', backend_kwargs={'filter_by_keys': {'typeOfLevel': 'atmosphere', 'stepType': 'instant'}})
+        ds = xr.open_dataset(TMPFILE, engine='cfgrib', backend_kwargs={'filter_by_keys': {'typeOfLevel': LEVEL_TYPE, 'stepType': 'instant'}})
    
         # create a TF Record with the raw data
         refc = ds.data_vars['refc']
@@ -47,11 +49,25 @@ def create_tfrecord(filename):
                 feature={
                     'size': tf.train.Feature(float_list=tf.train.FloatList(value=size)),
                     'ref': _array_feature(refc.data, min_value=0, max_value=60),
-                    'time': _string_feature(str(refc.time.data)),
-                    'valid_time': _string_feature(str(refc.valid_time.data))
+                    'time': _string_feature(str(refc.time.data)[:19]),
+                    'valid_time': _string_feature(str(refc.valid_time.data)[:19])
         }))
         return tfexample.SerializeToString()
 
+def create_dummy_tfrecord(filename):
+    print(filename)
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        TMPFILE="{}/read_grib".format(tmpdirname)
+        tf.io.gfile.copy(filename, TMPFILE, overwrite=True)
+
+        tfexample = tf.train.Example(
+            features=tf.train.Features(
+                feature={
+                    'size': tf.train.Feature(float_list=tf.train.FloatList(value=[3.0, 4.0])),
+        }))
+        return tfexample.SerializeToString()
+
+    
 def generate_filenames(startdate: str, enddate: str):
     start_dt = datetime.strptime(startdate, '%Y%m%d')
     end_dt = datetime.strptime(enddate, '%Y%m%d')
@@ -94,7 +110,7 @@ def run_job(options):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-      description='Create training/eval files for lightning prediction')
+      description='Create TF Records from HRRR refc files')
     parser.add_argument(
       '--project',
       default='',
