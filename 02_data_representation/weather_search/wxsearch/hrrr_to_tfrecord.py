@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import apache_beam as beam
 import random
+import sys
 
 LEVEL_TYPE = 'atmosphere'  # unknown?
 
@@ -35,24 +36,27 @@ def _string_feature(value):
     return _bytes_feature(value.encode('utf-8'))
 
 def create_tfrecord(filename):
-    print(filename)
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        TMPFILE="{}/read_grib".format(tmpdirname)
-        tf.io.gfile.copy(filename, TMPFILE, overwrite=True)
-        ds = xr.open_dataset(TMPFILE, engine='cfgrib', backend_kwargs={'filter_by_keys': {'typeOfLevel': LEVEL_TYPE, 'stepType': 'instant'}})
-   
-        # create a TF Record with the raw data
-        refc = ds.data_vars['refc']
-        size = np.array([ds.data_vars['refc'].sizes['y']*1.0, ds.data_vars['refc'].sizes['x']*1.0])
-        tfexample = tf.train.Example(
-            features=tf.train.Features(
-                feature={
-                    'size': tf.train.Feature(float_list=tf.train.FloatList(value=size)),
-                    'ref': _array_feature(refc.data, min_value=0, max_value=60),
-                    'time': _string_feature(str(refc.time.data)[:19]),
-                    'valid_time': _string_feature(str(refc.valid_time.data)[:19])
-        }))
-        return tfexample.SerializeToString()
+    try:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            TMPFILE="{}/read_grib".format(tmpdirname)
+            tf.io.gfile.copy(filename, TMPFILE, overwrite=True)
+            ds = xr.open_dataset(TMPFILE, engine='cfgrib', backend_kwargs={'filter_by_keys': {'typeOfLevel': LEVEL_TYPE, 'stepType': 'instant'}})
+
+            # create a TF Record with the raw data
+            refc = ds.data_vars['refc']
+            size = np.array([ds.data_vars['refc'].sizes['y']*1.0, ds.data_vars['refc'].sizes['x']*1.0])
+            tfexample = tf.train.Example(
+                features=tf.train.Features(
+                    feature={
+                        'size': tf.train.Feature(float_list=tf.train.FloatList(value=size)),
+                        'ref': _array_feature(refc.data, min_value=0, max_value=60),
+                        'time': _string_feature(str(refc.time.data)[:19]),
+                        'valid_time': _string_feature(str(refc.valid_time.data)[:19])
+            }))
+            yield tfexample.SerializeToString()
+    except:
+        e = sys.exc_info()[0]
+        logging.error(e)
 
 def create_dummy_tfrecord(filename):
     print(filename)
@@ -65,7 +69,7 @@ def create_dummy_tfrecord(filename):
                 feature={
                     'size': tf.train.Feature(float_list=tf.train.FloatList(value=[3.0, 4.0])),
         }))
-        return tfexample.SerializeToString()
+        yield tfexample.SerializeToString()
 
     
 def generate_filenames(startdate: str, enddate: str):
@@ -99,7 +103,7 @@ def run_job(options):
           | 'hrrr_files' >> beam.Create(
               generate_shuffled_filenames(options['startdate'], options['enddate']))
           | 'create_tfr' >>
-          beam.Map(lambda x: create_tfrecord(x))
+          beam.FlatMap(lambda x: create_tfrecord(x))
         )
 
         # write out tfrecords
@@ -146,7 +150,7 @@ if __name__ == '__main__':
       'max_num_workers':
           20,
       'machine_type':
-          'n1-standard-8',
+          'n1-standard-2',
       'region':
           'us-central1',
       'setup_file':

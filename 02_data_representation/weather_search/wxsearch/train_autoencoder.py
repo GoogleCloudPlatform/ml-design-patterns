@@ -46,11 +46,13 @@ def run_job(opts):
     
     checkpoint = tf.keras.callbacks.ModelCheckpoint(os.path.join(opts['outdir'], 'checkpoints'))
     
-    autoencoder = create_model()
-    history = autoencoder.fit(ds, steps_per_epoch=opts['num_steps']//opts['num_checkpoints'],
+    strategy = tf.distribute.MirroredStrategy()
+    with strategy.scope():
+        autoencoder = create_model()
+        history = autoencoder.fit(ds, steps_per_epoch=opts['num_steps']//opts['num_checkpoints'],
                               epochs=opts['num_checkpoints'], shuffle=True, callbacks=[checkpoint])
     
-    autoencoder.save(os.path.join(opts['outdir'], 'savedmodel'))
+        autoencoder.save(os.path.join(opts['outdir'], 'savedmodel'))
     
     
 if __name__ == '__main__':
@@ -63,25 +65,29 @@ if __name__ == '__main__':
     parser.add_argument(
       '--outdir', required=True, help='output dir. could be local or on GCS')
     parser.add_argument(
+      '--job-dir', required=False, help='pass through param if run on AI Platform. Ignored.')
+    parser.add_argument(
       '--input', required=True, help='input pattern. eg: gs://ai-analytics-solutions-kfpdemo/wxsearch/data/tfrecord-*')
     parser.add_argument(
-      '--batch_size', default=2, help='batch size for training')
+      '--batch_size', default=2, help='batch size for training', type=int)
     parser.add_argument(
-      '--num_steps', default=12, help='total number of steps for training')
+      '--num_steps', default=12, help='total number of steps for training', type=int)
     parser.add_argument(
-      '--num_checkpoints', default=3, help='number of steps for training')
+      '--num_checkpoints', default=3, help='number of steps for training', type=int)
      
      
     # parse command-line args and add a few more
     logging.basicConfig(level=getattr(logging, 'INFO', None))
+    tf.debugging.set_log_device_placement(True)
     options = parser.parse_args().__dict__
 
+    outdir = options['outdir']
     if not options['project']:
-        print('Removing local output directory ... hang on')
+        print('Removing local output directory {} ... hang on'.format(outdir))
         shutil.rmtree(outdir, ignore_errors=True)
         os.makedirs(outdir)
     else:
-        print('Removing GCS output directory ... hang on')
+        print('Removing GCS output directory {} ... hang on'.format(outdir))
         try:
             subprocess.check_call('gsutil -m rm -r {}'.format(outdir).split())
         except:  # pylint: disable=bare-except

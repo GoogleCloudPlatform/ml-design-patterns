@@ -1,0 +1,12 @@
+trainingInput:
+  scaleTier: CUSTOM
+  masterType: n1-highmem-2
+  masterConfig:
+    acceleratorConfig:
+      count: 2
+      type: NVIDIA_TESLA_K80
+  runtimeVersion: '2.2'
+  pythonVersion: '3.7'
+  scheduling:
+    maxWaitTime: 3600s
+    maxRunningTime: 7200s
