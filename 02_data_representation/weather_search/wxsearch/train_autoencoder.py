@@ -21,7 +21,7 @@ def read_dataset(pattern):
     ds = tf.data.TFRecordDataset(filenames, compression_type=None, buffer_size=None, num_parallel_reads=None)
     return ds.prefetch(tf.data.experimental.AUTOTUNE).map(parse_tfrecord)
 
-def create_model(nlayers=3, poolsize=4):
+def create_model(nlayers=4, poolsize=4):
     input_img = tf.keras.Input(shape=(1059, 1799, 1), name='refc_input')
 
     x = tf.keras.layers.Cropping2D(cropping=((17, 18),(4, 3)), name='cropped')(input_img)
@@ -32,11 +32,11 @@ def create_model(nlayers=3, poolsize=4):
     for layerno in range(nlayers):
         x = tf.keras.layers.Conv2D(2**(layerno + 4), 5, activation='relu', padding='same', name='decoder_conv_{}'.format(layerno))(x)
         x = tf.keras.layers.UpSampling2D(poolsize, name='decoder_upsamp_{}'.format(layerno))(x)
-    x = tf.keras.layers.Conv2D(1, 3, activation='sigmoid', padding='same', name='before_padding')(x)
+    x = tf.keras.layers.Conv2D(1, 3, activation=None, padding='same', name='before_padding')(x)
     decoded = tf.keras.layers.ZeroPadding2D(padding=((17,18),(4,3)), name='refc_reconstructed')(x)
 
     autoencoder = tf.keras.Model(input_img, decoded, name='autoencoder')
-    autoencoder.compile(optimizer='adam', loss='mse')
+    autoencoder.compile(optimizer='adam', loss=tf.keras.losses.LogCosh()) #loss='mse')
     return autoencoder
 
 def run_job(opts):
