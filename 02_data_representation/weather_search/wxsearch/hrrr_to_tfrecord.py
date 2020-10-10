@@ -44,11 +44,11 @@ def create_tfrecord(filename):
 
             # create a TF Record with the raw data
             refc = ds.data_vars['refc']
-            size = np.array([ds.data_vars['refc'].sizes['y']*1.0, ds.data_vars['refc'].sizes['x']*1.0])
+            size = np.array([ds.data_vars['refc'].sizes['y'], ds.data_vars['refc'].sizes['x']])
             tfexample = tf.train.Example(
                 features=tf.train.Features(
                     feature={
-                        'size': tf.train.Feature(float_list=tf.train.FloatList(value=size)),
+                        'size': tf.train.Feature(int64_list=tf.train.Int64List(value=size)),
                         'ref': _array_feature(refc.data, min_value=0, max_value=60),
                         'time': _string_feature(str(refc.time.data)[:19]),
                         'valid_time': _string_feature(str(refc.valid_time.data)[:19])
