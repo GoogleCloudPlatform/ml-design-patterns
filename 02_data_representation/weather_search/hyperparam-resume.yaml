@@ -9,4 +9,9 @@ trainingInput:
   pythonVersion: '3.7'
   scheduling:
     maxWaitTime: 3600s
-    maxRunningTime: 7200s
+  hyperparameters:
+    resumePreviousJobId: wxsearch_overfit_20201013_043059
+    maxParallelTrials: 3
+    maxTrials: 119
+    maxFailedTrials: 30
+    enableTrialEarlyStopping: True

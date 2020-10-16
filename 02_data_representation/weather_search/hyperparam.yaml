@@ -13,25 +13,27 @@ trainingInput:
     goal: MINIMIZE
     hyperparameterMetricTag: final_loss
     algorithm: GRID_SEARCH
-    maxParallelTrials: 1
-    maxTrials: 45
+    maxTrials: 60
+    maxParallelTrials: 3
     maxFailedTrials: 30
     enableTrialEarlyStopping: True
     params:
     - parameterName: num_layers
       type: INTEGER
       minValue: 2
-      maxValue: 4
+      maxValue: 6
     - parameterName: pool_size
-      type: INTEGER
-      minValue: 4
-      maxValue: 6      
-    - parameterName: embed_size
       type: DISCRETE
       discreteValues:
-        - 64
-        - 128
-        - 256
-        - 384
-        - 512
-
+      - 2
+      - 4
+      - 6
+    - parameterName: num_filters
+      type: INTEGER
+      minValue: 4
+      maxValue: 5
+    - parameterName: num_dense
+      type: DISCRETE
+      discreteValues:
+      - 0
+      - 256
