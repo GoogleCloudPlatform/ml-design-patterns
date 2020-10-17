@@ -154,7 +154,7 @@ if __name__ == '__main__':
       'region':
           'us-central1',
       'setup_file':
-          os.path.join(os.path.dirname(os.path.abspath(__file__)), './setup.py'),
+          os.path.join(os.path.dirname(os.path.abspath(__file__)), '../setup.py'),
       'save_main_session':
           True,
       # 'sdk_location':

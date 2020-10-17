@@ -1,0 +1,1 @@
+wxsearch/setup.py

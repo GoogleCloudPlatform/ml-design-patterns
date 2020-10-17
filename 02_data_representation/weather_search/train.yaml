@@ -9,4 +9,5 @@ trainingInput:
   pythonVersion: '3.7'
   scheduling:
     maxWaitTime: 3600s
-    maxRunningTime: 7200s
+
+#maxRunningTime: 84000s

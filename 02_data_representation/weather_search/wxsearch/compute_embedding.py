@@ -15,7 +15,6 @@ from . import train_autoencoder as trainer
 
 class Predict(beam.DoFn):
     def __init__(self, model_dir):
-        super(Predict, self).__init__()
         self.model_dir = model_dir
         self.embedder = None
     
@@ -25,6 +24,7 @@ class Predict(beam.DoFn):
         # in the constructor
         if not self.embedder:
             # create embedder
+            print('Loading model into worker TensorFlow version = ', tf.__version__)
             model = tf.keras.models.load_model(self.model_dir)
             embed_output = model.get_layer('refc_embedding').output
             self.embedder = tf.keras.Model(model.input, embed_output, name='embedder')
@@ -33,11 +33,12 @@ class Predict(beam.DoFn):
         result = x.copy()
         refc = tf.expand_dims(tf.expand_dims(x['ref'], 0), -1) # [h,w] to [1, h, w, 1]
         emb = self.embedder.predict(refc)
-        result['ref'] = tf.reshape(emb, [-1]) # single-file array
-        yield result 
+        result['ref'] = tf.squeeze(emb, axis=0)
+        yield result
 
 def convert_types(x):
     result = {}
+    print(x)
     for key in ['size', 'ref']:
         result[key] = x[key].numpy().tolist()
     for key in ['time', 'valid_time']:
@@ -48,7 +49,7 @@ def convert_types(x):
 def run_job(options):
     # create objects we need
     schema = {'fields': [
-        {'name': 'size', 'type': 'FLOAT', 'mode': 'REPEATED'},
+        {'name': 'size', 'type': 'INTEGER', 'mode': 'REPEATED'},
         {'name': 'ref', 'type': 'FLOAT', 'mode': 'REPEATED'},
         {'name': 'time', 'type': 'TIMESTAMP', 'mode': 'NULLABLE'},
         {'name': 'valid_time', 'type': 'TIMESTAMP', 'mode': 'NULLABLE'},
@@ -69,8 +70,7 @@ def run_job(options):
               write_disposition=beam.io.gcp.bigquery.BigQueryDisposition.WRITE_TRUNCATE)
         )
 
-
-if __name__ == '__main__':
+def main(args):
     parser = argparse.ArgumentParser(
       description='Create embeddings of TF records')
     parser.add_argument(
@@ -101,13 +101,15 @@ if __name__ == '__main__':
       'teardown_policy':
           'TEARDOWN_ALWAYS',
       'max_num_workers':
-          10,
+          5,
       'machine_type':
           'n1-standard-2',
       'region':
           'us-central1',
+      'setup_file':
+          os.path.join(os.path.dirname(os.path.abspath(__file__)), '../setup.py'),
       'save_main_session':
-          True,
+          False,
     })
 
     if not options['project']:
@@ -123,4 +125,5 @@ if __name__ == '__main__':
             pass
         options['runner'] = 'DataflowRunner'
 
+    print('Local TensorFlow version = ', tf.__version__)
     run_job(options)

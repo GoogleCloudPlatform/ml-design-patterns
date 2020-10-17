@@ -107,6 +107,7 @@ class CustomCommands(setuptools.Command):
 REQUIRED_PACKAGES = [
     'cfgrib',
     'xarray',
+    'tensorflow==2.3.0',
     'cloudml-hypertune',
 ]
 
