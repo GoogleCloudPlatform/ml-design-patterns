@@ -1,11 +1,14 @@
 *This is not an official Google product*
 
 # ml-design-patterns
-Source code accompanying O'Reilly book: 
-**Title**: Machine Learning Design Patterns
-**Authors**: Valliappa (Lak) Lakshmanan, Sara Robinson, Michael Munn
+Source code accompanying O'Reilly book: <br/>
+**Title**: Machine Learning Design Patterns <br/>
+**Authors**: Valliappa (Lak) Lakshmanan, Sara Robinson, Michael Munn <br/>
 
-<img src="mldp_cover_color.jpg" />
+<img src="mldp_cover_color.jpg" height="300"> https://www.oreilly.com/library/view/machine-learning-design/9781098115777/ </img> <br/>
+
+<a href="https://shop.aer.io/oreilly/p/machine-learning-design/9781098115784-9149">Buy from O'Reilly</a> <br/>
+<a href="https://www.amazon.com/Machine-Learning-Design-Patterns-Preparation/dp/1098115783">Buy from Amazon</a> <br/>
 
 We will update this repo with source code as we write each chapter. Stay tuned!
 
