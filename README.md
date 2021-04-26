@@ -12,6 +12,8 @@ Source code accompanying O'Reilly book: <br/>
 
 We will update this repo with source code as we write each chapter. Stay tuned!
 
+[<img src="https://deepnote.com/buttons/try-in-a-jupyter-notebook-white.svg">](https://deepnote.com/launch?url=https://github.com/GoogleCloudPlatform/ml-design-patterns)
+
 # Chapters
 
 * Preface
